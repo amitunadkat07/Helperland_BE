@@ -1,4 +1,5 @@
-﻿using Helperland.Entity.Model;
+﻿using Helperland.Entity.DataModels;
+using Helperland.Entity.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Helperland.Repository.Interface
 {
     public interface Ilogin
     {
-        public bool login(LoginModel user);
+        public UserDataModel login(LoginModel user);
 
         public bool signup(UserModel user);
     }

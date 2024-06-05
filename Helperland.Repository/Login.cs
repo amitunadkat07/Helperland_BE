@@ -19,14 +19,21 @@ namespace Helperland.Repository
         }
 
         #region login
-        public bool login(LoginModel user)
+        public UserDataModel login(LoginModel user)
         {
             var uservar = _context.Users.FirstOrDefault(u => u.Email == user.Email && u.Password == user.Password);
             if (uservar != null)
             {
-                return true;
+                UserDataModel U = new()
+                {
+                    FirstName = uservar.FirstName,
+                    LastName = uservar.LastName,
+                    Email = uservar.Email,
+                    RoleId = uservar.RoleId
+                };
+                return U;
             }
-            return false;
+            return new UserDataModel();
         }
         #endregion
 
@@ -38,7 +45,7 @@ namespace Helperland.Repository
             {
                 return false;
             }
-            #pragma warning disable CS8601 // Possible null reference assignment.
+
             User u = new()
             {
                 FirstName = user.Firstname,
@@ -57,7 +64,6 @@ namespace Helperland.Repository
                 IsDeleted = false,
                 IsOnline = true
             };
-            #pragma warning restore CS8601 // Possible null reference assignment.
             _context.Users.Add(u);
             _context.SaveChanges();
             return true;

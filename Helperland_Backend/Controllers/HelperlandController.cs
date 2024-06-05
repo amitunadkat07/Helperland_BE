@@ -25,9 +25,10 @@ namespace Helperland.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public ActionResult login([FromBody] LoginModel user)
         {
-            if (_login.login(user))
+            UserDataModel U = _login.login(user);
+            if (U.Email != null)
             {
-                return Ok("Logged in successfully.....");
+                return Ok(U);
             }
             return NotFound("You are not an authorised user, Please register first!!!");
         }
