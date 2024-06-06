@@ -29,7 +29,7 @@ namespace Helperland.Entity.Model
         [Required(ErrorMessage = "Password is Required!")]
         public string? Password { get; set; }
 
-        [Required(ErrorMessage = "Conform Password is Required!")]
+        [Required(ErrorMessage = "Confirm Password is Required!")]
         [Compare("Password", ErrorMessage = "Password and confirm password must be equal.")]
         public string? Confpassword { get; set; }
 

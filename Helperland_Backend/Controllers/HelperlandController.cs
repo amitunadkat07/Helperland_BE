@@ -45,9 +45,10 @@ namespace Helperland.Controllers
             {
                 return BadRequest("Password and confirm password must match");
             }
-            if (_login.signup(user))
+            UserDataModel U = _login.signup(user);
+            if (U.Email != null)
             {
-                return Ok("User created successfully, Kindly Login......");
+                return Ok(U);
             }
             return StatusCode(StatusCodes.Status500InternalServerError);
         }

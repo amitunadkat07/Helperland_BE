@@ -12,6 +12,6 @@ namespace Helperland.Repository.Interface
     {
         public UserDataModel login(LoginModel user);
 
-        public bool signup(UserModel user);
+        public UserDataModel signup(UserModel user);
     }
 }

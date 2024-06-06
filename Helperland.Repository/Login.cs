@@ -38,12 +38,12 @@ namespace Helperland.Repository
         #endregion
 
         #region signup
-        public bool signup(UserModel user)
+        public UserDataModel signup(UserModel user)
         {
             var uservar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
             if (uservar != null) 
             {
-                return false;
+                return new UserDataModel();
             }
 
             User u = new()
@@ -66,7 +66,14 @@ namespace Helperland.Repository
             };
             _context.Users.Add(u);
             _context.SaveChanges();
-            return true;
+            UserDataModel U = new()
+            {
+                FirstName = user.Firstname,
+                LastName = user.Lastname,
+                Email = user.Email,
+                RoleId = user.Roleid
+            };
+            return U;
         }
         #endregion
     }
