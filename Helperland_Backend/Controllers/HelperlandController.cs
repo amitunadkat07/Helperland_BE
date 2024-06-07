@@ -26,11 +26,11 @@ namespace Helperland.Controllers
         public ActionResult login([FromBody] LoginModel user)
         {
             UserDataModel U = _login.login(user);
-            if (U.Email != null)
+            if (U.IsError == false)
             {
                 return Ok(U);
             }
-            return NotFound("You are not an authorised user, Please register first!!!");
+            return NotFound(U);
         }
         #endregion
 

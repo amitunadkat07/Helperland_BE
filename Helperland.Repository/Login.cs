@@ -21,19 +21,42 @@ namespace Helperland.Repository
         #region login
         public UserDataModel login(LoginModel user)
         {
-            var uservar = _context.Users.FirstOrDefault(u => u.Email == user.Email && u.Password == user.Password);
-            if (uservar != null)
+            var uservar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+            if (uservar == null)
             {
                 UserDataModel U = new()
                 {
-                    FirstName = uservar.FirstName,
-                    LastName = uservar.LastName,
-                    Email = uservar.Email,
-                    RoleId = uservar.RoleId
+                    IsError = true,
+                    ErrorMessage = "User not registered, Please register first!!!!!!"
                 };
                 return U;
             }
-            return new UserDataModel();
+            else
+            {
+                var password = _context.Users.FirstOrDefault(u => u.Email == user.Email && u.Password == user.Password);
+                if (password == null)
+                {
+                    UserDataModel U = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "Either Email or Password is incorrect, Please check and try again!!!!!!"
+                    };
+                    return U;
+                }
+                else
+                {
+                    UserDataModel U = new()
+                    {
+                        FirstName = uservar.FirstName,
+                        LastName = uservar.LastName,
+                        Email = uservar.Email,
+                        RoleId = uservar.RoleId,
+                        IsError = false,
+                        ErrorMessage = ""
+                    };
+                    return U;
+                }
+            }
         }
         #endregion
 

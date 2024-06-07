@@ -15,5 +15,9 @@ namespace Helperland.Entity.Model
         public string? Email { get; set; }
 
         public int? RoleId { get; set; }
+
+        public bool IsError { get; set; }
+
+        public string? ErrorMessage { get; set; }
     }
 }
