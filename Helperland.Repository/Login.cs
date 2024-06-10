@@ -13,9 +13,12 @@ namespace Helperland.Repository
     public class Login : Ilogin
     {
         private readonly HelperlandContext _context;
-        public Login(HelperlandContext context)
+        private readonly EmailConfig _emailConfig;
+
+        public Login(HelperlandContext context, EmailConfig emailConfig)
         {
             _context = context;
+            _emailConfig = emailConfig;
         }
 
         #region login
@@ -95,6 +98,86 @@ namespace Helperland.Repository
                 LastName = user.Lastname,
                 Email = user.Email,
                 RoleId = user.Roleid
+            };
+            return U;
+        }
+        #endregion
+
+        #region forgotPass
+        public ResetPass forgotPass(ResetPass user)
+        {
+            var uservar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+            if (uservar == null)
+            {
+                ResetPass U = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "User not registered, Please register first!!!!!!"
+                };
+                return U;
+            }
+            else
+            {
+                Guid g = Guid.NewGuid();
+                uservar.ResetKey = g.ToString();
+                _context.Users.Update(uservar);
+                _context.SaveChanges();
+                var Subject = "Change PassWord";
+                var agreementUrl = "http://localhost:4200/resetpassword?t=" + _emailConfig.Encode(g.ToString()) + "&e=" + _emailConfig.Encode(uservar.Email);
+                var emailbody = $"<a href='{agreementUrl}'>Link to reset the password</a>";
+                _emailConfig.SendMail(uservar.Email, Subject, emailbody);
+                ResetPass U = new()
+                {
+                    Email = uservar.Email,
+                    IsError = false
+                };
+                return U;
+            }
+        }
+        #endregion
+
+        #region resetPassLink
+        public ResetPass resetPassLink(ResetPass user)
+        {
+            var email = _emailConfig.Decode(user.Email);
+            var token = _emailConfig.Decode(user.ResetKey);
+
+            var uservar = _context.Users.FirstOrDefault(u => u.Email == email && u.ResetKey == token);
+            if (uservar == null)
+            {
+                ResetPass U = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "Link is either expired or invaild!!!!!!"
+                };
+                return U;
+            }
+            else
+            {
+                ResetPass U = new()
+                {
+                    Email = uservar.Email,
+                    IsError = false
+                };
+                return U;
+            }
+        }
+        #endregion
+
+        #region resetPass
+        public ResetPass resetPass(ResetPass user)
+        {
+            var email = _emailConfig.Decode(user.Email);
+
+            var uservar = _context.Users.FirstOrDefault(u => u.Email == email);
+            uservar.Password = user.Password;
+            uservar.ResetKey = null;
+            _context.Update(uservar);
+            _context.SaveChanges();
+            ResetPass U = new()
+            {
+                Email = uservar.Email,
+                IsError = false
             };
             return U;
         }

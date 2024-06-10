@@ -6,20 +6,18 @@ using System.Threading.Tasks;
 
 namespace Helperland.Entity.Model
 {
-    public class UserDataModel
+    public class ResetPass
     {
-        public string? FirstName { get; set; }
-
-        public string? LastName { get; set;}
-
         public string? Email { get; set; }
 
-        public int? RoleId { get; set; }
+        public string? ResetKey { get; set; }
+
+        public string? Password { get; set; }
+
+        public string? ConfPassword { get; set; }
 
         public bool IsError { get; set; }
 
         public string? ErrorMessage { get; set; }
-
-        public string? ResetKey { get; set; }
     }
 }

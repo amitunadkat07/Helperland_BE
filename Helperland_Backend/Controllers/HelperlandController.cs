@@ -53,5 +53,50 @@ namespace Helperland.Controllers
             return StatusCode(StatusCodes.Status500InternalServerError);
         }
         #endregion
+
+        #region forgotPass
+        [HttpPost, Route("ForgotPass")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult forgotPass([FromBody] ResetPass user)
+        {
+            ResetPass U = _login.forgotPass(user);
+            if (U.IsError == false)
+            {
+                return Ok(U);
+            }
+            return NotFound(U);
+        }
+        #endregion
+
+        #region resetPassLink
+        [HttpPost, Route("ResetPassLink")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult resetPassLink([FromBody] ResetPass user)
+        {
+            ResetPass U = _login.resetPassLink(user);
+            if (U.IsError == false)
+            {
+                return Ok(U);
+            }
+            return NotFound(U);
+        }
+        #endregion
+
+        #region resetPass
+        [HttpPost, Route("ResetPass")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult resetPass([FromBody] ResetPass user)
+        {
+            ResetPass U = _login.resetPass(user);
+            if (U.IsError == false)
+            {
+                return Ok(U);
+            }
+            return NotFound(U);
+        }
+        #endregion
     }
 }

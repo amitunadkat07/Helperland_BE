@@ -1,4 +1,5 @@
 using Helperland.Entity.DataContext;
+using Helperland.Entity.Model;
 using Helperland.Repository;
 using Helperland.Repository.Interface;
 using Microsoft.EntityFrameworkCore;
@@ -15,6 +16,10 @@ builder.Services.AddTransient<HelperlandContext>();
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<HelperlandContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<Ilogin, Login>();
+var emailConfig = builder.Configuration
+        .GetSection("EmailConfiguration")
+        .Get<EmailConfig>();
+builder.Services.AddSingleton(emailConfig);
 
 var app = builder.Build();
 
