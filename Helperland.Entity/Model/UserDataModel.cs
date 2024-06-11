@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Helperland.Entity.Model
+﻿namespace Helperland.Entity.Model
 {
     public class UserDataModel
     {
@@ -21,5 +15,7 @@ namespace Helperland.Entity.Model
         public string? ErrorMessage { get; set; }
 
         public string? ResetKey { get; set; }
+
+        public string? Token { get; set; }
     }
 }

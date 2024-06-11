@@ -1,21 +1,15 @@
 ﻿using Helperland.Entity.DataContext;
 using Helperland.Entity.DataModels;
 using Helperland.Entity.Model;
-using Helperland.Repository.Interface;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Helperland.Repository
+namespace Helperland.Repository.Interface
 {
-    public class Login : Ilogin
+    public class UserService : IUserService
     {
         private readonly HelperlandContext _context;
         private readonly EmailConfig _emailConfig;
 
-        public Login(HelperlandContext context, EmailConfig emailConfig)
+        public UserService(HelperlandContext context, EmailConfig emailConfig)
         {
             _context = context;
             _emailConfig = emailConfig;
@@ -67,7 +61,7 @@ namespace Helperland.Repository
         public UserDataModel signup(UserModel user)
         {
             var uservar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
-            if (uservar != null) 
+            if (uservar != null)
             {
                 return new UserDataModel();
             }
@@ -180,6 +174,23 @@ namespace Helperland.Repository
                 IsError = false
             };
             return U;
+        }
+        #endregion
+
+        #region getusers
+        public List<UserDataModel> getusers()
+        {
+            var users = _context.Users;
+            List<UserDataModel> user = (from u in _context.Users
+                                       select new UserDataModel
+                                       {
+                                           FirstName = u.FirstName,
+                                           LastName = u.LastName,
+                                           Email = u.Email,
+                                           RoleId = u.RoleId,
+                                           ResetKey = u.ResetKey
+                                       }).ToList();
+            return user;
         }
         #endregion
     }

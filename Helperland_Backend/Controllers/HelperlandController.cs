@@ -1,6 +1,8 @@
 ﻿using Helperland.Entity.DataModels;
 using Helperland.Entity.Model;
 using Helperland.Repository.Interface;
+using Helperland.Repository.TokenService;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -12,11 +14,13 @@ namespace Helperland.Controllers
     [ApiController]
     public class HelperlandController : ControllerBase
     {
-        private readonly Ilogin _login;
+        private readonly IUserService _login;
+        private readonly ITokenService _tokenService;
 
-        public HelperlandController(Ilogin login)
+        public HelperlandController(IUserService login, ITokenService tokenService)
         {
             _login = login;
+            _tokenService = tokenService;
         }
 
         #region login
@@ -28,6 +32,8 @@ namespace Helperland.Controllers
             UserDataModel U = _login.login(user);
             if (U.IsError == false)
             {
+                var jwtToken = _tokenService.GenerateJWTAuthetication(U);
+                U.Token = jwtToken;
                 return Ok(U);
             }
             return NotFound(U);
@@ -96,6 +102,18 @@ namespace Helperland.Controllers
                 return Ok(U);
             }
             return NotFound(U);
+        }
+        #endregion
+
+        #region getusers
+        [HttpGet, Route("GetUsers")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult<IEnumerable<UserDataModel>> getusers()
+        {
+            List<UserDataModel> user = _login.getusers();
+            return Ok(user);
         }
         #endregion
     }
