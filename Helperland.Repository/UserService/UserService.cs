@@ -15,182 +15,224 @@ namespace Helperland.Repository.Interface
             _emailConfig = emailConfig;
         }
 
-        #region login
-        public UserDataModel login(LoginModel user)
+        #region Login
+        public UserDataModel Login(LoginModel user)
         {
-            var uservar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
-            if (uservar == null)
+            try
             {
-                UserDataModel U = new()
-                {
-                    IsError = true,
-                    ErrorMessage = "User not registered, Please register first!!!!!!"
-                };
-                return U;
-            }
-            else
-            {
-                var password = _context.Users.FirstOrDefault(u => u.Email == user.Email && u.Password == user.Password);
-                if (password == null)
+                var userVar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+                if (userVar == null)
                 {
                     UserDataModel U = new()
                     {
                         IsError = true,
-                        ErrorMessage = "Either Email or Password is incorrect, Please check and try again!!!!!!"
+                        ErrorMessage = "User not registered, Please register first!!!!!!"
                     };
                     return U;
                 }
                 else
                 {
-                    UserDataModel U = new()
+                    var password = _context.Users.FirstOrDefault(u => u.Email == user.Email && u.Password == user.Password);
+                    if (password == null)
                     {
-                        FirstName = uservar.FirstName,
-                        LastName = uservar.LastName,
-                        Email = uservar.Email,
-                        RoleId = uservar.RoleId,
-                        IsError = false,
-                        ErrorMessage = ""
+                        UserDataModel U = new()
+                        {
+                            IsError = true,
+                            ErrorMessage = "Either Email or Password is incorrect, Please check and try again!!!!!!"
+                        };
+                        return U;
+                    }
+                    else
+                    {
+                        UserDataModel U = new()
+                        {
+                            FirstName = userVar.FirstName,
+                            LastName = userVar.LastName,
+                            Email = userVar.Email,
+                            RoleId = userVar.RoleId,
+                            IsError = false,
+                            ErrorMessage = ""
+                        };
+                        return U;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new UserDataModel();
+            }
+        }
+        #endregion
+
+        #region Signup
+        public UserDataModel Signup(UserModel user)
+        {
+            try
+            {
+                var userVar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+                if (userVar != null)
+                {
+                    return new UserDataModel();
+                }
+
+                User u = new()
+                {
+                    FirstName = user.Firstname,
+                    LastName = user.Lastname,
+                    Email = user.Email,
+                    Password = user.Password,
+                    Mobile = user.Contact,
+                    RoleId = user.Roleid,
+                    UserTypeId = 1,
+                    IsRegisteredUser = true,
+                    WorksWithPets = false,
+                    CreatedDate = DateTime.Now,
+                    ModifiedDate = DateTime.Now,
+                    IsActive = true,
+                    IsApproved = true,
+                    IsDeleted = false,
+                    IsOnline = true
+                };
+                _context.Users.Add(u);
+                _context.SaveChanges();
+                UserDataModel U = new()
+                {
+                    FirstName = user.Firstname,
+                    LastName = user.Lastname,
+                    Email = user.Email,
+                    RoleId = user.Roleid
+                };
+                return U;
+            }
+            catch (Exception ex)
+            {
+                return new UserDataModel();
+            }
+        }
+        #endregion
+
+        #region ForgotPass
+        public ResetPass ForgotPass(ResetPass user)
+        {
+            try
+            {
+                var userVar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
+                if (userVar == null)
+                {
+                    ResetPass U = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "User not registered, Please register first!!!!!!"
+                    };
+                    return U;
+                }
+                else
+                {
+                    Guid g = Guid.NewGuid();
+                    userVar.ResetKey = g.ToString();
+                    _context.Users.Update(userVar);
+                    _context.SaveChanges();
+                    var subject = "Change PassWord";
+                    var agreementUrl = "http://localhost:4200/resetpassword?t=" + _emailConfig.Encode(g.ToString()) + "&e=" + _emailConfig.Encode(userVar.Email);
+                    var emailBody = $"<a href='{agreementUrl}'>Link to reset the password</a>";
+                    _emailConfig.SendMail(userVar.Email, subject, emailBody);
+                    ResetPass U = new()
+                    {
+                        Email = userVar.Email,
+                        IsError = false
                     };
                     return U;
                 }
             }
-        }
-        #endregion
-
-        #region signup
-        public UserDataModel signup(UserModel user)
-        {
-            var uservar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
-            if (uservar != null)
+            catch (Exception ex)
             {
-                return new UserDataModel();
+                return new ResetPass();
             }
-
-            User u = new()
-            {
-                FirstName = user.Firstname,
-                LastName = user.Lastname,
-                Email = user.Email,
-                Password = user.Password,
-                Mobile = user.Contact,
-                RoleId = user.Roleid,
-                UserTypeId = 1,
-                IsRegisteredUser = true,
-                WorksWithPets = false,
-                CreatedDate = DateTime.Now,
-                ModifiedDate = DateTime.Now,
-                IsActive = true,
-                IsApproved = true,
-                IsDeleted = false,
-                IsOnline = true
-            };
-            _context.Users.Add(u);
-            _context.SaveChanges();
-            UserDataModel U = new()
-            {
-                FirstName = user.Firstname,
-                LastName = user.Lastname,
-                Email = user.Email,
-                RoleId = user.Roleid
-            };
-            return U;
         }
         #endregion
 
-        #region forgotPass
-        public ResetPass forgotPass(ResetPass user)
+        #region ResetPassLink
+        public ResetPass ResetPassLink(ResetPass user)
         {
-            var uservar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
-            if (uservar == null)
+            try
             {
-                ResetPass U = new()
+                var email = _emailConfig.Decode(user.Email);
+                var token = _emailConfig.Decode(user.ResetKey);
+
+                var userVar = _context.Users.FirstOrDefault(u => u.Email == email && u.ResetKey == token);
+                if (userVar == null)
                 {
-                    IsError = true,
-                    ErrorMessage = "User not registered, Please register first!!!!!!"
-                };
-                return U;
+                    ResetPass U = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "Link is either expired or invaild!!!!!!"
+                    };
+                    return U;
+                }
+                else
+                {
+                    ResetPass U = new()
+                    {
+                        Email = userVar.Email,
+                        IsError = false
+                    };
+                    return U;
+                }
             }
-            else
+            catch (Exception ex) 
             {
-                Guid g = Guid.NewGuid();
-                uservar.ResetKey = g.ToString();
-                _context.Users.Update(uservar);
+                return new ResetPass(); 
+            }
+        }
+        #endregion
+
+        #region ResetPass
+        public ResetPass ResetPass(ResetPass user)
+        {
+            try
+            {
+                var email = _emailConfig.Decode(user.Email);
+
+                var userVar = _context.Users.FirstOrDefault(u => u.Email == email);
+                userVar.Password = user.Password;
+                userVar.ResetKey = null;
+                _context.Update(userVar);
                 _context.SaveChanges();
-                var Subject = "Change PassWord";
-                var agreementUrl = "http://localhost:4200/resetpassword?t=" + _emailConfig.Encode(g.ToString()) + "&e=" + _emailConfig.Encode(uservar.Email);
-                var emailbody = $"<a href='{agreementUrl}'>Link to reset the password</a>";
-                _emailConfig.SendMail(uservar.Email, Subject, emailbody);
                 ResetPass U = new()
                 {
-                    Email = uservar.Email,
+                    Email = userVar.Email,
                     IsError = false
                 };
                 return U;
             }
-        }
-        #endregion
-
-        #region resetPassLink
-        public ResetPass resetPassLink(ResetPass user)
-        {
-            var email = _emailConfig.Decode(user.Email);
-            var token = _emailConfig.Decode(user.ResetKey);
-
-            var uservar = _context.Users.FirstOrDefault(u => u.Email == email && u.ResetKey == token);
-            if (uservar == null)
+            catch (Exception ex)
             {
-                ResetPass U = new()
-                {
-                    IsError = true,
-                    ErrorMessage = "Link is either expired or invaild!!!!!!"
-                };
-                return U;
-            }
-            else
-            {
-                ResetPass U = new()
-                {
-                    Email = uservar.Email,
-                    IsError = false
-                };
-                return U;
+                return new ResetPass();
             }
         }
         #endregion
 
-        #region resetPass
-        public ResetPass resetPass(ResetPass user)
+        #region GetUsers
+        public List<UserDataModel> GetUsers()
         {
-            var email = _emailConfig.Decode(user.Email);
-
-            var uservar = _context.Users.FirstOrDefault(u => u.Email == email);
-            uservar.Password = user.Password;
-            uservar.ResetKey = null;
-            _context.Update(uservar);
-            _context.SaveChanges();
-            ResetPass U = new()
+            try
             {
-                Email = uservar.Email,
-                IsError = false
-            };
-            return U;
-        }
-        #endregion
-
-        #region getusers
-        public List<UserDataModel> getusers()
-        {
-            var users = _context.Users;
-            List<UserDataModel> user = (from u in _context.Users
-                                       select new UserDataModel
-                                       {
-                                           FirstName = u.FirstName,
-                                           LastName = u.LastName,
-                                           Email = u.Email,
-                                           RoleId = u.RoleId,
-                                           ResetKey = u.ResetKey
-                                       }).ToList();
-            return user;
+                var users = _context.Users;
+                List<UserDataModel> user = (from u in _context.Users
+                                            select new UserDataModel
+                                            {
+                                                FirstName = u.FirstName,
+                                                LastName = u.LastName,
+                                                Email = u.Email,
+                                                RoleId = u.RoleId,
+                                                ResetKey = u.ResetKey
+                                            }).ToList();
+                return user;
+            }
+            catch (Exception ex)
+            {
+                return new List<UserDataModel>(); 
+            }
         }
         #endregion
     }
