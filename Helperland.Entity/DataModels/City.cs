@@ -22,5 +22,5 @@ public partial class City
     public virtual State State { get; set; } = null!;
 
     [InverseProperty("City")]
-    public virtual ICollection<Zipcode> Zipcodes { get; set; } = new List<Zipcode>();
+    public virtual ICollection<ZipCode> ZipCodes { get; set; } = new List<ZipCode>();
 }

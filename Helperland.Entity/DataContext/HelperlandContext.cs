@@ -40,90 +40,123 @@ public partial class HelperlandContext : DbContext
 
     public virtual DbSet<UserAddress> UserAddresses { get; set; }
 
-    public virtual DbSet<Zipcode> Zipcodes { get; set; }
+    public virtual DbSet<ZipCode> ZipCodes { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseSqlServer("Server=192.168.0.5;Database=krishnthakrar_db;User=krishn;Password=nf9Y5XNT;Encrypt=False;");
-    }
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseNpgsql("User ID = postgres;Password=Krishn@1303;Server=localhost;Port=5432;Database=Helperland;Integrated Security=true;Pooling=true;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<City>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("City_pkey");
+
             entity.HasOne(d => d.State).WithMany(p => p.Cities)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_City_State");
+                .HasConstraintName("City_StateId_fkey");
+        });
+
+        modelBuilder.Entity<ContactU>(entity =>
+        {
+            entity.HasKey(e => e.ContactUsiD).HasName("ContactUs_pkey");
+        });
+
+        modelBuilder.Entity<ContactUsAttachment>(entity =>
+        {
+            entity.HasKey(e => e.ContactUsAttachmentId).HasName("ContactUsAttachment_pkey");
         });
 
         modelBuilder.Entity<FavoriteAndBlocked>(entity =>
         {
+            entity.HasKey(e => e.Id).HasName("FavoriteAndBlocked_pkey");
+
             entity.HasOne(d => d.TargetUser).WithMany(p => p.FavoriteAndBlockedTargetUsers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_FavoriteAndBlocked_User");
+                .HasConstraintName("FavoriteAndBlocked_TargetUserId_fkey");
 
             entity.HasOne(d => d.User).WithMany(p => p.FavoriteAndBlockedUsers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_FavoriteAndBlocked_FavoriteAndBlocked");
+                .HasConstraintName("FavoriteAndBlocked_UserId_fkey");
         });
 
         modelBuilder.Entity<Rating>(entity =>
         {
-            entity.Property(e => e.IsApproved).HasDefaultValueSql("((1))");
+            entity.HasKey(e => e.RatingId).HasName("Rating_pkey");
 
             entity.HasOne(d => d.RatingFromNavigation).WithMany(p => p.RatingRatingFromNavigations)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Rating_User");
+                .HasConstraintName("Rating_RatingFrom_fkey");
 
             entity.HasOne(d => d.RatingToNavigation).WithMany(p => p.RatingRatingToNavigations)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Rating_User1");
+                .HasConstraintName("Rating_RatingTo_fkey");
 
             entity.HasOne(d => d.ServiceRequest).WithMany(p => p.Ratings)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Rating_ServiceRequest");
+                .HasConstraintName("Rating_ServiceRequestId_fkey");
         });
 
         modelBuilder.Entity<ServiceRequest>(entity =>
         {
-            entity.Property(e => e.CreatedDate).HasDefaultValueSql("(getdate())");
-            entity.Property(e => e.ModifiedDate).HasDefaultValueSql("(getdate())");
+            entity.HasKey(e => e.ServiceRequestId).HasName("ServiceRequest_pkey");
 
-            entity.HasOne(d => d.ServiceProvider).WithMany(p => p.ServiceRequestServiceProviders).HasConstraintName("FK_ServiceRequest_User1");
+            entity.HasOne(d => d.ServiceProvider).WithMany(p => p.ServiceRequestServiceProviders).HasConstraintName("ServiceRequest_ServiceProviderId_fkey");
 
             entity.HasOne(d => d.User).WithMany(p => p.ServiceRequestUsers)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ServiceRequest_User");
+                .HasConstraintName("ServiceRequest_UserId_fkey");
         });
 
         modelBuilder.Entity<ServiceRequestAddress>(entity =>
         {
-            entity.Property(e => e.Type).HasDefaultValueSql("((1))");
+            entity.HasKey(e => e.Id).HasName("ServiceRequestAddress_pkey");
 
-            entity.HasOne(d => d.ServiceRequest).WithMany(p => p.ServiceRequestAddresses).HasConstraintName("FK_ServiceRequestAddress_ServiceRequest");
+            entity.Property(e => e.Type).HasDefaultValueSql("1");
+
+            entity.HasOne(d => d.ServiceRequest).WithMany(p => p.ServiceRequestAddresses).HasConstraintName("ServiceRequestAddress_ServiceRequestId_fkey");
         });
 
         modelBuilder.Entity<ServiceRequestExtra>(entity =>
         {
+            entity.HasKey(e => e.ServiceRequestExtraId).HasName("ServiceRequestExtra_pkey");
+
             entity.HasOne(d => d.ServiceRequest).WithMany(p => p.ServiceRequestExtras)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ServiceRequestExtra_ServiceRequest");
+                .HasConstraintName("ServiceRequestExtra_ServiceRequestId_fkey");
+        });
+
+        modelBuilder.Entity<ServiceSetting>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("ServiceSetting_pkey");
+        });
+
+        modelBuilder.Entity<State>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("State_pkey");
+        });
+
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.UserId).HasName("User_pkey");
         });
 
         modelBuilder.Entity<UserAddress>(entity =>
         {
-            entity.HasKey(e => e.AddressId).HasName("PK_UserAddresses");
+            entity.HasKey(e => e.AddressId).HasName("UserAddress_pkey");
 
             entity.HasOne(d => d.User).WithMany(p => p.UserAddresses)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_UserAddresses_User");
+                .HasConstraintName("UserAddress_UserId_fkey");
         });
 
-        modelBuilder.Entity<Zipcode>(entity =>
+        modelBuilder.Entity<ZipCode>(entity =>
         {
-            entity.HasOne(d => d.City).WithMany(p => p.Zipcodes)
+            entity.HasKey(e => e.Id).HasName("ZipCode_pkey");
+
+            entity.HasOne(d => d.City).WithMany(p => p.ZipCodes)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Zipcode_City");
+                .HasConstraintName("ZipCode_CityId_fkey");
         });
 
         OnModelCreatingPartial(modelBuilder);

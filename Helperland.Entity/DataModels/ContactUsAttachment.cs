@@ -15,5 +15,6 @@ public partial class ContactUsAttachment
     [StringLength(100)]
     public string Name { get; set; } = null!;
 
-    public byte[] FileName { get; set; } = null!;
+    [Column(TypeName = "character varying")]
+    public string FileName { get; set; } = null!;
 }

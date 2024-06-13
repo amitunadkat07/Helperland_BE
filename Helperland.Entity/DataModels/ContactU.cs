@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -9,7 +10,7 @@ namespace Helperland.Entity.DataModels;
 public partial class ContactU
 {
     [Key]
-    public int ContactUsId { get; set; }
+    public int ContactUsiD { get; set; }
 
     [StringLength(50)]
     public string Name { get; set; } = null!;
@@ -26,12 +27,13 @@ public partial class ContactU
     [StringLength(20)]
     public string PhoneNumber { get; set; } = null!;
 
+    [Column(TypeName = "character varying")]
     public string Message { get; set; } = null!;
 
     [StringLength(100)]
     public string? UploadFileName { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime? CreatedOn { get; set; }
 
     public int? CreatedBy { get; set; }
@@ -42,5 +44,6 @@ public partial class ContactU
 
     public int? AssignedToUser { get; set; }
 
-    public bool IsDeleted { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray? IsDeleted { get; set; }
 }

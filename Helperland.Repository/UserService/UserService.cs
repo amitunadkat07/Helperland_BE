@@ -1,6 +1,7 @@
 ﻿using Helperland.Entity.DataContext;
 using Helperland.Entity.DataModels;
 using Helperland.Entity.Model;
+using System.Collections;
 
 namespace Helperland.Repository.Interface
 {
@@ -84,14 +85,14 @@ namespace Helperland.Repository.Interface
                     Mobile = user.Contact,
                     RoleId = user.Roleid,
                     UserTypeId = 1,
-                    IsRegisteredUser = true,
-                    WorksWithPets = false,
+                    IsRegisteredUser = new BitArray(1) { [0] = true },
+                    WorksWithPets = new BitArray(1),
                     CreatedDate = DateTime.Now,
                     ModifiedDate = DateTime.Now,
-                    IsActive = true,
-                    IsApproved = true,
-                    IsDeleted = false,
-                    IsOnline = true
+                    IsActive = new BitArray(1) { [0] = true },
+                    IsApproved = new BitArray(1) { [0] = true },
+                    IsDeleted = new BitArray(1),
+                    IsOnline = new BitArray(1) { [0] = true }
                 };
                 _context.Users.Add(u);
                 _context.SaveChanges();
@@ -179,9 +180,9 @@ namespace Helperland.Repository.Interface
                     return U;
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
-                return new ResetPass(); 
+                return new ResetPass();
             }
         }
         #endregion
@@ -231,7 +232,7 @@ namespace Helperland.Repository.Interface
             }
             catch (Exception ex)
             {
-                return new List<UserDataModel>(); 
+                return new List<UserDataModel>();
             }
         }
         #endregion

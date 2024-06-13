@@ -52,8 +52,8 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 builder.Services.AddTransient<HelperlandContext>();
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<HelperlandContext>(options => options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<HelperlandContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("HelperlandContext")));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
 var emailConfig = builder.Configuration

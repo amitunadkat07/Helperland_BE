@@ -6,8 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Helperland.Entity.DataModels;
 
-[Table("Zipcode")]
-public partial class Zipcode
+[Table("ZipCode")]
+public partial class ZipCode
 {
     [Key]
     public int Id { get; set; }
@@ -18,6 +18,6 @@ public partial class Zipcode
     public int CityId { get; set; }
 
     [ForeignKey("CityId")]
-    [InverseProperty("Zipcodes")]
+    [InverseProperty("ZipCodes")]
     public virtual City City { get; set; } = null!;
 }

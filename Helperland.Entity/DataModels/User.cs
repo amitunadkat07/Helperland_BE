@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -33,16 +34,17 @@ public partial class User
 
     public int? Gender { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime? DateOfBirth { get; set; }
 
     [StringLength(1000)]
-    public string? WebSite { get; set; }
+    public string? Website { get; set; }
 
     [StringLength(200)]
     public string? UserProfilePicture { get; set; }
 
-    public bool IsRegisteredUser { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray IsRegisteredUser { get; set; } = null!;
 
     [StringLength(200)]
     public string? PaymentGatewayUserRef { get; set; }
@@ -50,7 +52,8 @@ public partial class User
     [StringLength(20)]
     public string? ZipCode { get; set; }
 
-    public bool WorksWithPets { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray WorksWithPets { get; set; } = null!;
 
     public int? LanguageId { get; set; }
 
@@ -59,23 +62,27 @@ public partial class User
     [StringLength(200)]
     public string? ResetKey { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime CreatedDate { get; set; }
 
-    [Column(TypeName = "datetime")]
-    public DateTime ModifiedDate { get; set; }
+    [Column(TypeName = "timestamp without time zone")]
+    public DateTime? ModifiedDate { get; set; }
 
     public int ModifiedBy { get; set; }
 
-    public bool IsApproved { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray IsApproved { get; set; } = null!;
 
-    public bool IsActive { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray IsActive { get; set; } = null!;
 
-    public bool IsDeleted { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray IsDeleted { get; set; } = null!;
 
     public int? Status { get; set; }
 
-    public bool IsOnline { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray IsOnline { get; set; } = null!;
 
     [StringLength(100)]
     public string? BankTokenId { get; set; }

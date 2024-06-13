@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,9 +17,11 @@ public partial class FavoriteAndBlocked
 
     public int TargetUserId { get; set; }
 
-    public bool IsFavorite { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray IsFavorite { get; set; } = null!;
 
-    public bool IsBlocked { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray IsBlocked { get; set; } = null!;
 
     [ForeignKey("TargetUserId")]
     [InverseProperty("FavoriteAndBlockedTargetUsers")]

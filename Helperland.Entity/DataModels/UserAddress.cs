@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,9 +30,11 @@ public partial class UserAddress
     [StringLength(20)]
     public string PostalCode { get; set; } = null!;
 
-    public bool IsDefault { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray IsDefault { get; set; } = null!;
 
-    public bool IsDeleted { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray IsDeleted { get; set; } = null!;
 
     [StringLength(20)]
     public string? Mobile { get; set; }

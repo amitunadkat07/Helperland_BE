@@ -16,8 +16,8 @@ public partial class ServiceSetting
 
     public int Interval { get; set; }
 
-    public TimeSpan ScheduleTime { get; set; }
+    public TimeOnly ScheduleTime { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime LastPoll { get; set; }
 }

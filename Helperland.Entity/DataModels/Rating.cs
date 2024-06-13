@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -18,26 +19,28 @@ public partial class Rating
 
     public int RatingTo { get; set; }
 
-    [Column(TypeName = "decimal(2, 1)")]
+    [Precision(2, 1)]
     public decimal Ratings { get; set; }
 
     [StringLength(2000)]
     public string? Comments { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime RatingDate { get; set; }
 
-    public bool? IsApproved { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray? IsApproved { get; set; }
 
-    public bool VisibleOnHomeScreen { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray VisibleOnHomeScreen { get; set; } = null!;
 
-    [Column(TypeName = "decimal(2, 1)")]
+    [Precision(2, 1)]
     public decimal OnTimeArrival { get; set; }
 
-    [Column(TypeName = "decimal(2, 1)")]
+    [Precision(2, 1)]
     public decimal Friendly { get; set; }
 
-    [Column(TypeName = "decimal(2, 1)")]
+    [Precision(2, 1)]
     public decimal QualityOfService { get; set; }
 
     [ForeignKey("RatingFrom")]

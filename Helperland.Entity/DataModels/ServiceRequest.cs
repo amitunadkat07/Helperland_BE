@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -16,28 +17,28 @@ public partial class ServiceRequest
 
     public int ServiceId { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime ServiceStartDate { get; set; }
 
     [StringLength(10)]
     public string ZipCode { get; set; } = null!;
 
-    public byte? ServiceFrequency { get; set; }
+    public short? ServiceFrequency { get; set; }
 
-    [Column(TypeName = "decimal(8, 2)")]
+    [Precision(8, 2)]
     public decimal? ServiceHourlyRate { get; set; }
 
-    public double ServiceHours { get; set; }
+    public decimal ServiceHours { get; set; }
 
-    public double? ExtraHours { get; set; }
+    public decimal? ExtraHours { get; set; }
 
-    [Column(TypeName = "decimal(8, 2)")]
+    [Precision(8, 2)]
     public decimal SubTotal { get; set; }
 
-    [Column(TypeName = "decimal(8, 2)")]
+    [Precision(8, 2)]
     public decimal? Discount { get; set; }
 
-    [Column(TypeName = "decimal(8, 2)")]
+    [Precision(8, 2)]
     public decimal TotalCost { get; set; }
 
     [StringLength(500)]
@@ -46,38 +47,40 @@ public partial class ServiceRequest
     [StringLength(50)]
     public string? PaymentTransactionRefNo { get; set; }
 
-    public bool PaymentDue { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray PaymentDue { get; set; } = null!;
 
-    public byte? JobStatus { get; set; }
+    public short? JobStatus { get; set; }
 
     public int? ServiceProviderId { get; set; }
 
-    [Column("SPAcceptedDate", TypeName = "datetime")]
+    [Column("SPAcceptedDate", TypeName = "timestamp without time zone")]
     public DateTime? SpacceptedDate { get; set; }
 
-    public bool HasPets { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray HasPets { get; set; } = null!;
 
     public int? Status { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime CreatedDate { get; set; }
 
-    [Column(TypeName = "datetime")]
+    [Column(TypeName = "timestamp without time zone")]
     public DateTime ModifiedDate { get; set; }
 
     public int? ModifiedBy { get; set; }
 
-    [Column(TypeName = "decimal(8, 2)")]
+    [Precision(8, 2)]
     public decimal? RefundedAmount { get; set; }
 
-    [Column(TypeName = "decimal(18, 2)")]
+    [Precision(18, 2)]
     public decimal Distance { get; set; }
 
-    public bool? HasIssue { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray? HasIssue { get; set; }
 
-    public bool? PaymentDone { get; set; }
-
-    public Guid? RecordVersion { get; set; }
+    [Column(TypeName = "bit(1)")]
+    public BitArray? PaymentDone { get; set; }
 
     [InverseProperty("ServiceRequest")]
     public virtual ICollection<Rating> Ratings { get; set; } = new List<Rating>();
