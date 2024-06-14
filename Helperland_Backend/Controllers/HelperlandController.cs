@@ -65,6 +65,8 @@ namespace Helperland.Controllers
                 UserDataModel userData = _userService.Signup(user);
                 if (userData.Email != null)
                 {
+                    var jwtToken = _tokenService.GenerateJWTAuthetication(userData);
+                    userData.Token = jwtToken;
                     return Ok(userData);
                 }
                 string errorMessage = user.Firstname + " " + user.Lastname + " tried to register again";
