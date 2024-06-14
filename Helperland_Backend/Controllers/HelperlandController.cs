@@ -10,13 +10,13 @@ namespace Helperland.Controllers
     [ApiController]
     public class HelperlandController : ControllerBase
     {
-        private readonly IUserService _login;
+        private readonly IUserService _userService;
         private readonly ITokenService _tokenService;
         private readonly ILogger<HelperlandController> _logger;
 
-        public HelperlandController(IUserService login, ITokenService tokenService, ILogger<HelperlandController> logger)
+        public HelperlandController(IUserService userService, ITokenService tokenService, ILogger<HelperlandController> logger)
         {
-            _login = login;
+            _userService = userService;
             _tokenService = tokenService;
             _logger = logger;
         }
@@ -25,18 +25,25 @@ namespace Helperland.Controllers
         [HttpPost, Route("Login")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult Login([FromBody] LoginModel user)
+        public ActionResult<LoginModel> Login([FromBody] LoginModel user)
         {
-            UserDataModel U = _login.Login(user);
-            if (U.IsError == false)
+            try
             {
-                var jwtToken = _tokenService.GenerateJWTAuthetication(U);
-                U.Token = jwtToken;
-                _logger.LogInformation(U.FirstName + " " + U.LastName + " logged in");
-                return Ok(U);
+                UserDataModel userData = _userService.Login(user);
+                if (!userData.IsError)
+                {
+                    var jwtToken = _tokenService.GenerateJWTAuthetication(userData);
+                    userData.Token = jwtToken;
+                    return Ok(userData);
+                }
+                string errorMessage = "Unauthorized user " + user.Email + " tried to login";
+                _logger.LogError(errorMessage);
+                return NotFound(userData);
             }
-            _logger.LogError("Unauthorized user " + user.Email + " tried to login");
-            return NotFound(U);
+            catch
+            {
+                return NotFound();
+            }
         }
         #endregion
 
@@ -45,21 +52,29 @@ namespace Helperland.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public ActionResult Signup([FromBody] UserModel user)
+        public ActionResult<UserModel> Signup([FromBody] UserModel user)
         {
-            if (user.Password != user.Confpassword)
+            try
             {
-                _logger.LogError(user.Firstname + " " + user.Lastname + " entered different passwords");
-                return BadRequest("Password and confirm password must match");
+                if (user.Password != user.Confpassword)
+                {
+                    string message = user.Firstname + " " + user.Lastname + " entered different passwords";
+                    _logger.LogError(message);
+                    return BadRequest("Password and confirm password must match");
+                }
+                UserDataModel userData = _userService.Signup(user);
+                if (userData.Email != null)
+                {
+                    return Ok(userData);
+                }
+                string errorMessage = user.Firstname + " " + user.Lastname + " tried to register again";
+                _logger.LogError(errorMessage);
+                return StatusCode(StatusCodes.Status500InternalServerError);
             }
-            UserDataModel U = _login.Signup(user);
-            if (U.Email != null)
+            catch
             {
-                _logger.LogInformation(U.FirstName + " " + U.LastName + " registered as new user");
-                return Ok(U);
+                return BadRequest();
             }
-            _logger.LogError(user.Firstname + " " + user.Lastname + " tried to register again");
-            return StatusCode(StatusCodes.Status500InternalServerError);
         }
         #endregion
 
@@ -67,16 +82,23 @@ namespace Helperland.Controllers
         [HttpPost, Route("ForgotPass")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult ForgotPass([FromBody] ResetPass user)
+        public ActionResult<ResetPass> ForgotPass([FromBody] ResetPass user)
         {
-            ResetPass U = _login.ForgotPass(user);
-            if (U.IsError == false)
+            try
             {
-                _logger.LogInformation(U.Email + " wants to change the password");
-                return Ok(U);
+                ResetPass passwordObject = _userService.ForgotPass(user);
+                if (!passwordObject.IsError)
+                {
+                    return Ok(passwordObject);
+                }
+                string errorMessage = "Unauthorized user " + user.Email + " wants to change the password";
+                _logger.LogError(errorMessage);
+                return NotFound(passwordObject);
             }
-            _logger.LogError("Unauthorized user " + user.Email + " wants to change the password");
-            return NotFound(U);
+            catch 
+            { 
+                return BadRequest(); 
+            }
         }
         #endregion
 
@@ -84,14 +106,21 @@ namespace Helperland.Controllers
         [HttpPost, Route("ResetPassLink")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult ResetPassLink([FromBody] ResetPass user)
+        public ActionResult<ResetPass> ResetPassLink([FromBody] ResetPass user)
         {
-            ResetPass U = _login.ResetPassLink(user);
-            if (U.IsError == false)
+            try
             {
-                return Ok(U);
+                ResetPass passwordObject = _userService.ResetPassLink(user);
+                if (!passwordObject.IsError)
+                {
+                    return Ok(passwordObject);
+                }
+                return NotFound(passwordObject);
             }
-            return NotFound(U);
+            catch
+            {
+                return NotFound();
+            }
         }
         #endregion
 
@@ -99,15 +128,21 @@ namespace Helperland.Controllers
         [HttpPost, Route("ResetPass")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult ResetPass([FromBody] ResetPass user)
+        public ActionResult<ResetPass> ResetPass([FromBody] ResetPass user)
         {
-            ResetPass U = _login.ResetPass(user);
-            if (U.IsError == false)
+            try
             {
-                _logger.LogInformation("Password changed for " + U.Email);
-                return Ok(U);
+                ResetPass passwordObject = _userService.ResetPass(user);
+                if (!passwordObject.IsError)
+                {
+                    return Ok(passwordObject);
+                }
+                return NotFound(passwordObject);
             }
-            return NotFound(U);
+            catch
+            {
+                return NotFound();
+            }
         }
         #endregion
 
@@ -118,8 +153,15 @@ namespace Helperland.Controllers
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public ActionResult<IEnumerable<UserDataModel>> GetUsers()
         {
-            List<UserDataModel> user = _login.GetUsers();
-            return Ok(user);
+            try
+            {
+                List<UserDataModel> user = _userService.GetUsers();
+                return Ok(user);
+            }
+            catch
+            {
+                return Unauthorized();
+            }
         }
         #endregion
     }
