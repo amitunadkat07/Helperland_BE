@@ -29,7 +29,7 @@ namespace Helperland.Repository.TokenService
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var expires =
-                DateTime.UtcNow.AddSeconds(30);
+                DateTime.UtcNow.AddHours(4);
 
             var token = new JwtSecurityToken(
                 Configuration["Jwt:Issuer"],

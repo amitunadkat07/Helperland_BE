@@ -56,22 +56,22 @@ namespace Helperland.Controllers
         {
             try
             {
-                if (user.Password != user.Confpassword)
-                {
-                    string message = user.Firstname + " " + user.Lastname + " entered different passwords";
-                    _logger.LogError(message);
-                    return BadRequest("Password and confirm password must match");
-                }
                 UserDataModel userData = _userService.Signup(user);
-                if (userData.Email != null)
+                if (!userData.IsError)
                 {
-                    var jwtToken = _tokenService.GenerateJWTAuthetication(userData);
-                    userData.Token = jwtToken;
+                    if (userData.RoleId == 2)
+                    {
+                        var jwtToken = _tokenService.GenerateJWTAuthetication(userData);
+                        userData.Token = jwtToken;
+                    }
                     return Ok(userData);
                 }
-                string errorMessage = user.Firstname + " " + user.Lastname + " tried to register again";
-                _logger.LogError(errorMessage);
-                return StatusCode(StatusCodes.Status500InternalServerError);
+                else
+                {
+                    string errorMessage = user.Firstname + " " + user.Lastname + " tried to register again";
+                    _logger.LogError(errorMessage);
+                    return BadRequest(userData);
+                }
             }
             catch
             {

@@ -6,6 +6,8 @@
 
         public string? ResetKey { get; set; }
 
+        public string? Date { get; set; }
+
         public string? Password { get; set; }
 
         public string? ConfPassword { get; set; }

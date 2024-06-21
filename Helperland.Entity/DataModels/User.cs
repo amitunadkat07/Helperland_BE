@@ -34,8 +34,7 @@ public partial class User
 
     public int? Gender { get; set; }
 
-    [Column(TypeName = "timestamp without time zone")]
-    public DateTime? DateOfBirth { get; set; }
+    public DateOnly? DateOfBirth { get; set; }
 
     [StringLength(1000)]
     public string? Website { get; set; }

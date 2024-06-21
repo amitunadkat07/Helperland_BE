@@ -27,7 +27,7 @@ namespace Helperland.Repository.Interface
                     UserDataModel userData = new()
                     {
                         IsError = true,
-                        ErrorMessage = "User not registered, Please register first!!!!!!"
+                        ErrorMessage = "User not registered, Please register first!"
                     };
                     return userData;
                 }
@@ -38,7 +38,7 @@ namespace Helperland.Repository.Interface
                         UserDataModel userData = new()
                         {
                             IsError = true,
-                            ErrorMessage = "Either Email or Password is incorrect, Please check and try again!!!!!!"
+                            ErrorMessage = "Either Email or Password is incorrect, Please check and try again!"
                         };
                         return userData;
                     }
@@ -72,7 +72,12 @@ namespace Helperland.Repository.Interface
                 var userVar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
                 if (userVar != null)
                 {
-                    return new UserDataModel();
+                    UserDataModel userModel = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "User already exists, Please Login"
+                    };
+                    return userModel;
                 }
 
                 User userData = new()
@@ -100,7 +105,8 @@ namespace Helperland.Repository.Interface
                     FirstName = user.Firstname,
                     LastName = user.Lastname,
                     Email = user.Email,
-                    RoleId = user.Roleid
+                    RoleId = user.Roleid,
+                    IsError = false
                 };
                 return userDataModel;
             }
@@ -122,7 +128,7 @@ namespace Helperland.Repository.Interface
                     ResetPass passwordObject = new()
                     {
                         IsError = true,
-                        ErrorMessage = "User not registered, Please register first!!!!!!"
+                        ErrorMessage = "User not registered, Please register first!"
                     };
                     return passwordObject;
                 }
@@ -132,9 +138,9 @@ namespace Helperland.Repository.Interface
                     userVar.ResetKey = g.ToString();
                     _context.Users.Update(userVar);
                     _context.SaveChanges();
-                    var subject = "Change PassWord";
-                    var agreementUrl = "http://localhost:4200/resetpassword?t=" + _emailConfig.Encode(g.ToString()) + "&e=" + _emailConfig.Encode(userVar.Email);
-                    var emailBody = $"<a href='{agreementUrl}'>Link to reset the password</a>";
+                    var subject = "Helperland - Change Password";
+                    var agreementUrl = $"http://localhost:4200/resetpassword?t={_emailConfig.Encode(g.ToString())}&e={_emailConfig.Encode(userVar.Email)}&dt={_emailConfig.Encode(DateTime.Now.ToString())}";
+                    var emailBody = $"<p>Here's the link to change the password.</p><p><a href='{agreementUrl}'>Link to change the password</a></p><p>Thanks and Regards,<br> Helperland Team</p>";
                     _emailConfig.SendMail(userVar.Email, subject, emailBody);
                     ResetPass passwordObject = new()
                     {
@@ -156,8 +162,21 @@ namespace Helperland.Repository.Interface
         {
             try
             {
-                var email = _emailConfig.Decode(user.Email);
-                var token = _emailConfig.Decode(user.ResetKey);
+                var email = _emailConfig.Decode(user.Email ?? "");
+                var token = _emailConfig.Decode(user.ResetKey ?? "");
+                var date = _emailConfig.Decode(user.Date ?? "");
+
+                TimeSpan time = DateTime.Now - DateTime.Parse(date);
+
+                if (time.TotalHours > 2)
+                {
+                    ResetPass passwordObject = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "Link is either expired or invaild!"
+                    };
+                    return passwordObject;
+                }
 
                 var userVar = _context.Users.FirstOrDefault(u => u.Email == email && u.ResetKey == token);
                 if (userVar == null)
@@ -165,7 +184,7 @@ namespace Helperland.Repository.Interface
                     ResetPass passwordObject = new()
                     {
                         IsError = true,
-                        ErrorMessage = "Link is either expired or invaild!!!!!!"
+                        ErrorMessage = "Link is either expired or invaild!"
                     };
                     return passwordObject;
                 }
@@ -190,19 +209,31 @@ namespace Helperland.Repository.Interface
         {
             try
             {
-                var email = _emailConfig.Decode(user.Email);
+                var email = _emailConfig.Decode(user.Email ?? "");
 
                 var userVar = _context.Users.FirstOrDefault(u => u.Email == email);
-                userVar.Password = user.Password;
-                userVar.ResetKey = null;
-                _context.Update(userVar);
-                _context.SaveChanges();
-                ResetPass passwordObject = new()
+                if (userVar == null)
                 {
-                    Email = userVar.Email,
-                    IsError = false
-                };
-                return passwordObject;
+                    ResetPass passObject = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "Internal Server Error!"
+                    };
+                    return passObject;
+                }
+                else
+                {
+                    userVar.Password = user.Password;
+                    userVar.ResetKey = null;
+                    _context.Update(userVar);
+                    _context.SaveChanges();
+                    ResetPass passwordObject = new()
+                    {
+                        Email = userVar.Email,
+                        IsError = false
+                    };
+                    return passwordObject;
+                }
             }
             catch {
                 return new ResetPass();
