@@ -15,5 +15,9 @@ namespace Helperland.Repository.Interface
         public ResetPass ResetPass(ResetPass user);
 
         public List<UserDataModel> GetUsers();
+
+        public ProfileDataModel GetProfile(string email);
+
+        public ProfileDataModel UpdateProfile(ProfileDataModel profile);
     }
 }

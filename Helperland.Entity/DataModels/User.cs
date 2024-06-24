@@ -34,7 +34,7 @@ public partial class User
 
     public int? Gender { get; set; }
 
-    public DateOnly? DateOfBirth { get; set; }
+    public DateTime? DateOfBirth { get; set; }
 
     [StringLength(1000)]
     public string? Website { get; set; }
@@ -53,8 +53,6 @@ public partial class User
 
     [Column(TypeName = "bit(1)")]
     public BitArray WorksWithPets { get; set; } = null!;
-
-    public int? LanguageId { get; set; }
 
     public int? NationalityId { get; set; }
 
@@ -88,6 +86,9 @@ public partial class User
 
     [StringLength(50)]
     public string? TaxNo { get; set; }
+
+    [StringLength(20)]
+    public string? Language { get; set; }
 
     [InverseProperty("TargetUser")]
     public virtual ICollection<FavoriteAndBlocked> FavoriteAndBlockedTargetUsers { get; set; } = new List<FavoriteAndBlocked>();

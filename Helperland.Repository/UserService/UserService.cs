@@ -173,7 +173,7 @@ namespace Helperland.Repository.Interface
                     ResetPass passwordObject = new()
                     {
                         IsError = true,
-                        ErrorMessage = "Link is either expired or invaild!"
+                        ErrorMessage = "Link is either expired or invalid!"
                     };
                     return passwordObject;
                 }
@@ -184,7 +184,7 @@ namespace Helperland.Repository.Interface
                     ResetPass passwordObject = new()
                     {
                         IsError = true,
-                        ErrorMessage = "Link is either expired or invaild!"
+                        ErrorMessage = "Link is either expired or invalid!"
                     };
                     return passwordObject;
                 }
@@ -225,6 +225,7 @@ namespace Helperland.Repository.Interface
                 {
                     userVar.Password = user.Password;
                     userVar.ResetKey = null;
+                    userVar.ModifiedDate = DateTime.Now;
                     _context.Update(userVar);
                     _context.SaveChanges();
                     ResetPass passwordObject = new()
@@ -247,6 +248,7 @@ namespace Helperland.Repository.Interface
             try
             {
                 List<UserDataModel> user = (from u in _context.Users
+                                            orderby u.UserId
                                             select new UserDataModel
                                             {
                                                 FirstName = u.FirstName,
@@ -260,6 +262,122 @@ namespace Helperland.Repository.Interface
             catch
             {
                 return new List<UserDataModel>();
+            }
+        }
+        #endregion
+
+        #region GetProfile
+        public ProfileDataModel GetProfile(string email)
+        {
+            try
+            {
+                if (email == null)
+                {
+                    ProfileDataModel profile = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "Can not load profile data"
+                    };
+                    return profile;
+                }
+                else
+                {
+                    var user = _context.Users.FirstOrDefault(u => u.Email == email);
+                    if (user == null)
+                    {
+                        ProfileDataModel profile = new()
+                        {
+                            IsError = true,
+                            ErrorMessage = "Can not load profile data"
+                        };
+                        return profile;
+                    }
+                    else
+                    {
+                        ProfileDataModel profile = new()
+                        {
+                            FirstName = user.FirstName,
+                            LastName = user.LastName,
+                            Email = user.Email,
+                            Contact = user.Mobile,
+                            DateOfBirth = user.DateOfBirth,
+                            Language = user.Language,
+                            IsError = false
+                        };
+                        return profile;
+                    }
+                }
+            }
+            catch
+            {
+                ProfileDataModel profile = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "Can not load profile data"
+                };
+                return profile;
+            }
+        }
+        #endregion
+
+        #region UpdateProfile
+        public ProfileDataModel UpdateProfile(ProfileDataModel profile)
+        {
+            try
+            {
+                if (profile.Email == null)
+                {
+                    ProfileDataModel profileData = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "Can not load profile data"
+                    };
+                    return profileData;
+                }
+                else
+                {
+                    var user = _context.Users.FirstOrDefault(u => u.Email == profile.Email);
+                    if (user == null)
+                    {
+                        ProfileDataModel profileData = new()
+                        {
+                            IsError = true,
+                            ErrorMessage = "Can not load profile data"
+                        };
+                        return profileData;
+                    }
+                    else
+                    {
+                        user.FirstName = profile.FirstName ?? user.FirstName;
+                        user.LastName = profile.LastName ?? user.LastName;
+                        user.Mobile = profile.Contact ?? user.Mobile;
+                        user.DateOfBirth = profile.DateOfBirth ?? user.DateOfBirth;
+                        user.Language = profile.Language ?? user.Language;
+                        user.ModifiedDate = DateTime.Now;
+                        _context.Users.Update(user);
+                        _context.SaveChanges();
+
+                        ProfileDataModel profileData = new()
+                        {
+                            FirstName = user.FirstName,
+                            LastName = user.LastName,
+                            Email = user.Email,
+                            Contact = user.Mobile,
+                            Language = user.Language,
+                            IsError = false
+                        };
+                        return profileData;
+                    }
+                }
+            }
+            catch
+            {
+                ProfileDataModel profileData = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "Can not update profile data"
+                };
+                return profileData;
             }
         }
         #endregion
