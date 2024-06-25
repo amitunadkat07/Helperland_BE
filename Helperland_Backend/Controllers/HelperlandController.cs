@@ -4,6 +4,7 @@ using Helperland.Repository.Interface;
 using Helperland.Repository.TokenService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Helperland.Controllers
 {
@@ -207,21 +208,36 @@ namespace Helperland.Controllers
         {
             try
             {
-                if (profile.Email == null)
-                {
-                    ProfileDataModel profileData = new()
-                    {
-                        IsError = true,
-                        ErrorMessage = "Can not update the data"
-                    };
-                    return BadRequest(profileData);
-                }
                 ProfileDataModel profileDataModel = _userService.UpdateProfile(profile);
                 if (profileDataModel.Email == null)
                 {
                     return BadRequest(profileDataModel);
                 }
                 return Ok(profileDataModel);
+            }
+            catch
+            {
+                return Unauthorized();
+            }
+        }
+        #endregion
+
+        #region ChangePassword
+        [Authorize]
+        [HttpPut("UpdatePassword")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult<PasswordModel> UpdatePassword(PasswordModel password)
+        {
+            try
+            {
+                PasswordModel passwordModel = _userService.UpdatePassword(password);
+                if (passwordModel.Email == null)
+                {
+                    return BadRequest(passwordModel);
+                }
+                return Ok(passwordModel);
             }
             catch
             {

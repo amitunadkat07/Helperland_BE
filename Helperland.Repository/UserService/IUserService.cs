@@ -19,5 +19,7 @@ namespace Helperland.Repository.Interface
         public ProfileDataModel GetProfile(string email);
 
         public ProfileDataModel UpdateProfile(ProfileDataModel profile);
+
+        public PasswordModel UpdatePassword(PasswordModel password);
     }
 }

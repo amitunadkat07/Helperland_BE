@@ -2,6 +2,7 @@
 using Helperland.Entity.DataModels;
 using Helperland.Entity.Model;
 using System.Collections;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Helperland.Repository.Interface
 {
@@ -59,7 +60,12 @@ namespace Helperland.Repository.Interface
             }
             catch
             {
-                return new UserDataModel();
+                UserDataModel userData = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "User not registered, Please register first!"
+                };
+                return userData;
             }
         }
         #endregion
@@ -112,7 +118,12 @@ namespace Helperland.Repository.Interface
             }
             catch
             {
-                return new UserDataModel();
+                UserDataModel userModel = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "User already exists, Please Login"
+                };
+                return userModel;
             }
         }
         #endregion
@@ -152,7 +163,12 @@ namespace Helperland.Repository.Interface
             }
             catch
             {
-                return new ResetPass();
+                ResetPass passwordObject = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "User not registered, Please register first!"
+                };
+                return passwordObject;
             }
         }
         #endregion
@@ -199,7 +215,12 @@ namespace Helperland.Repository.Interface
                 }
             }
             catch {
-                return new ResetPass();
+                ResetPass passwordObject = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "Link is either expired or invalid!"
+                };
+                return passwordObject;
             }
         }
         #endregion
@@ -237,7 +258,12 @@ namespace Helperland.Repository.Interface
                 }
             }
             catch {
-                return new ResetPass();
+                ResetPass passObject = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "Password can not be updated!"
+                };
+                return passObject;
             }
         }
         #endregion
@@ -378,6 +404,69 @@ namespace Helperland.Repository.Interface
                     ErrorMessage = "Can not update profile data"
                 };
                 return profileData;
+            }
+        }
+        #endregion
+
+        #region UpdatePassword
+        public PasswordModel UpdatePassword(PasswordModel password)
+        {
+            try
+            {
+                if (password.Email == null)
+                {
+                    PasswordModel passwordModel = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "Can not update the password"
+                    };
+                    return passwordModel;
+                }
+                else
+                {
+                    var user = _context.Users.FirstOrDefault(u => u.Email == password.Email && u.Password == password.OldPassword);
+                    if (user == null)
+                    {
+                        PasswordModel passwordModel = new()
+                        {
+                            IsError = true,
+                            ErrorMessage = "Please enter the correct old password to update the password."
+                        };
+                        return passwordModel;
+                    }
+                    else if (user.Password == password.NewPassword)
+                    {
+                        PasswordModel passwordModel = new()
+                        {
+                            IsError = true,
+                            ErrorMessage = "New password must be different from old password."
+                        };
+                        return passwordModel;
+                    }
+                    else
+                    {
+                        user.Password = password.NewPassword;
+                        user.ModifiedDate = DateTime.Now;
+                        _context.Users.Update(user);
+                        _context.SaveChanges();
+
+                        PasswordModel passwordModel = new()
+                        {
+                            Email = password.Email,
+                            IsError = false
+                        };
+                        return passwordModel;
+                    }
+                }
+            }
+            catch
+            {
+                PasswordModel passwordModel = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "Can not update the password"
+                };
+                return passwordModel;
             }
         }
         #endregion
