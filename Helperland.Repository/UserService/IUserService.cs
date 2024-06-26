@@ -21,5 +21,15 @@ namespace Helperland.Repository.Interface
         public ProfileDataModel UpdateProfile(ProfileDataModel profile);
 
         public PasswordModel UpdatePassword(PasswordModel password);
+
+        public AddressDataModel CreateAddress(AddressDataModel address);
+
+        public AddressDataModel UpdateAddress(AddressDataModel address);
+
+        public List<AddressDataModel> GetAddressByUser(string email);
+
+        public AddressDataModel GetAddressById(int id);
+
+        public bool DeleteAddress(int id);
     }
 }

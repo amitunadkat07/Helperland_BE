@@ -53,7 +53,6 @@ namespace Helperland.Controllers
         [HttpPost, Route("Signup")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public ActionResult<UserModel> Signup([FromBody] UserModel user)
         {
             try
@@ -238,6 +237,139 @@ namespace Helperland.Controllers
                     return BadRequest(passwordModel);
                 }
                 return Ok(passwordModel);
+            }
+            catch
+            {
+                return Unauthorized();
+            }
+        }
+        #endregion
+
+        #region CreateAddress
+        [HttpPost, Route("CreateAddress")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public ActionResult<AddressDataModel> CreateAddress([FromBody] AddressDataModel address)
+        {
+            try
+            {
+                AddressDataModel addressDataModel = _userService.CreateAddress(address);
+                if (addressDataModel.IsError)
+                {
+                    return BadRequest(addressDataModel);
+                }
+                else
+                {
+                    return Ok(addressDataModel);
+                }
+            }
+            catch (Exception ex) 
+            {
+                return Unauthorized(ex);
+            }
+        }
+        #endregion
+
+        #region UpdateAddress
+        [HttpPut, Route("UpdateAddress")]
+        [Authorize]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult<AddressDataModel> UpdateAddress(AddressDataModel address)
+        {
+            try
+            {
+                if (address.AddressId == null)
+                {
+                    return BadRequest();
+                }
+                else
+                {
+                    AddressDataModel addressDataModel = _userService.UpdateAddress(address);
+                    if (addressDataModel.IsError)
+                    {
+                        return BadRequest(addressDataModel);
+                    }
+                    else
+                    {
+                        return Ok(addressDataModel);
+                    }
+                }
+            }
+            catch
+            {
+                return Unauthorized();
+            }
+        }
+        #endregion
+
+        #region GetAddressByUser
+        [Authorize]
+        [HttpGet, Route("GetAddressByUser")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult<IEnumerable<AddressDataModel>> GetAddressByUser(string email)
+        {
+            try
+            {
+                List<AddressDataModel> addressData = _userService.GetAddressByUser(email);
+                return Ok(addressData);
+            }
+            catch
+            {
+                return Unauthorized();
+            }
+        }
+        #endregion
+
+        #region GetAddressById
+        [Authorize]
+        [HttpGet, Route("GetAddressById")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        public ActionResult<AddressDataModel> GetAddressById(int id)
+        {
+            try
+            {
+                AddressDataModel addressData = _userService.GetAddressById(id);
+                if (addressData.IsError)
+                {
+                    return BadRequest(addressData);
+                }
+                return Ok(addressData);
+            }
+            catch
+            {
+                return Unauthorized();
+            }
+        }
+        #endregion
+
+        #region DeleteAddress
+        [Authorize]
+        [HttpDelete, Route("DeleteAddress")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public ActionResult DeleteAddress(int id)
+        {
+            try
+            {
+                if (id == 0)
+                {
+                    return BadRequest();
+                }
+                if (!_userService.DeleteAddress(id))
+                {
+                    return NotFound();
+                }
+                return NoContent();
             }
             catch
             {

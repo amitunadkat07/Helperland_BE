@@ -20,9 +20,9 @@ namespace Helperland.Entity.Model
 
         public string? ZipCode { get; set; }
 
-        public string? Mobile { get; set; }
+        public string? Contact { get; set; }
 
-        public bool? IsError { get; set; }
+        public bool IsError { get; set; }
 
         public string? ErrorMessage { get; set; }
     }

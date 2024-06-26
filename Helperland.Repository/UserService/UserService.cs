@@ -470,5 +470,208 @@ namespace Helperland.Repository.Interface
             }
         }
         #endregion
+
+        #region CreateAddress
+        public AddressDataModel CreateAddress(AddressDataModel address)
+        {
+            try
+            {
+                if (address == null)
+                {
+                    AddressDataModel addressData = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "Address is empty!"
+                    };
+                    return addressData;
+                }
+                else
+                {
+                    var user = _context.Users.FirstOrDefault(x => x.Email == address.Email);
+                    if (user == null)
+                    {
+                        AddressDataModel addressData = new()
+                        {
+                            IsError = true,
+                            ErrorMessage = "Address not added!"
+                        };
+                        return addressData;
+                    }
+                    else
+                    {
+                        UserAddress userAddress = new()
+                        {
+                            UserId = user.UserId,
+                            AddressLine1 = address.Street,
+                            AddressLine2 = address.House,
+                            City = address.City,
+                            PostalCode = address.ZipCode,
+                            Mobile = address.Contact,
+                            Email = address.Email,
+                            IsDefault = new BitArray(1),
+                            IsDeleted = new BitArray(1),
+                        };
+                        _context.UserAddresses.Add(userAddress);
+                        _context.SaveChanges();
+
+                        AddressDataModel addressData = new()
+                        {
+                            IsError = false
+                        };
+                        return addressData;
+                    }
+                }
+            }
+            catch
+            {
+                AddressDataModel addressData = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "Address not added!"
+                };
+                return addressData;
+            }
+        }
+        #endregion
+
+        #region UpdateAddress
+        public AddressDataModel UpdateAddress(AddressDataModel address)
+        {
+            try
+            {
+                var addressData = _context.UserAddresses.FirstOrDefault(x => x.AddressId == address.AddressId);
+                if (addressData == null)
+                {
+                    AddressDataModel addressDataModel = new()
+                    {
+                        IsError = true,
+                        ErrorMessage = "Address not updated!"
+                    };
+                    return addressDataModel;
+                }
+                else
+                {
+                    addressData.AddressLine1 = address.Street ?? addressData.AddressLine1;
+                    addressData.AddressLine2 = address.House ?? addressData.AddressLine2;
+                    addressData.City = address.City ?? addressData.City;
+                    addressData.PostalCode = address.ZipCode ?? addressData.PostalCode;
+                    addressData.Mobile = address.Contact ?? addressData.Mobile;
+                    _context.UserAddresses.Update(addressData);
+                    _context.SaveChanges();
+
+                    AddressDataModel addressDataModel = new()
+                    {
+                        IsError = false
+                    };
+                    return addressDataModel;
+                }
+            }
+            catch
+            {
+                AddressDataModel addressData = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "Address not added!"
+                };
+                return addressData;
+            }
+        }
+        #endregion
+
+        #region GetAddressByUser
+        public List<AddressDataModel> GetAddressByUser(string email)
+        {
+            try
+            {
+                List<AddressDataModel> addressData = (from address in _context.UserAddresses
+                                                      where address.Email == email && address.IsDeleted == new BitArray(1)
+                                                      orderby address.AddressId
+                                                      select new AddressDataModel
+                                                      {
+                                                        AddressId = address.AddressId,
+                                                        Street = address.AddressLine1,
+                                                        House = address.AddressLine2,
+                                                        City = address.City,
+                                                        ZipCode = address.PostalCode,
+                                                        Contact = address.Mobile
+                                                      }).ToList();
+                return addressData;
+            }
+            catch
+            {
+                List<AddressDataModel> addressData = ( from address in _context.UserAddresses
+                                                       select new AddressDataModel
+                                                       {
+                                                         IsError = true,
+                                                         ErrorMessage = "Can not fetch the address!"
+                                                       }).ToList();
+                return addressData;
+            }
+        }
+        #endregion
+
+        #region GetAddressById
+        public AddressDataModel GetAddressById(int id)
+        {
+            try
+            {
+                AddressDataModel? addressData = (from address in _context.UserAddresses
+                                                where address.AddressId == id
+                                                select new AddressDataModel
+                                                {
+                                                    AddressId = address.AddressId,
+                                                    Street = address.AddressLine1,
+                                                    House = address.AddressLine2,
+                                                    ZipCode = address.PostalCode,
+                                                    City = address.City,
+                                                    Contact = address.Mobile
+                                                }).FirstOrDefault();
+                if (addressData == null)
+                {
+                    return new AddressDataModel()
+                    {
+                        IsError = true,
+                        ErrorMessage = "No address exist with that address id!"
+                    };
+                }
+                return addressData;
+            }
+            catch
+            {
+                AddressDataModel addressData = new()
+                {
+                    IsError = true,
+                    ErrorMessage = "Can not fetch the address!"
+                };
+                return addressData;
+            }
+        }
+        #endregion
+
+        #region DeleteAddress
+        public bool DeleteAddress(int id)
+        {
+            try
+            {
+                var address = _context.UserAddresses.FirstOrDefault(x => x.AddressId == id);
+                if (address == null)
+                {
+                    return false;
+                }
+                else
+                {
+                    address.IsDeleted = new BitArray(1);
+                    address.IsDeleted[0] = true;
+                    _context.UserAddresses.Update(address);
+                    _context.SaveChanges();
+                    return true;
+                }
+            }
+            catch
+            {
+                return false;
+            }
+        }
+        #endregion
     }
 }
