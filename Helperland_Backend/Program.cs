@@ -1,5 +1,6 @@
 using Helperland.Entity.DataContext;
 using Helperland.Entity.Model;
+using Helperland.Repository.BookingService;
 using Helperland.Repository.Interface;
 using Helperland.Repository.TokenService;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -56,6 +57,7 @@ builder.Services.AddDbContext<HelperlandContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("HelperlandContext")));
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IBookingService, BookingService>();
 var emailConfig = builder.Configuration
         .GetSection("EmailConfiguration")
         .Get<EmailConfig>();
