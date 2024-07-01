@@ -1,5 +1,5 @@
-﻿using Helperland.Repository.BookingService;
-using Microsoft.AspNetCore.Http;
+﻿using Helperland.Entity.Model;
+using Helperland.Repository.BookingService;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Helperland.Controllers
@@ -17,32 +17,21 @@ namespace Helperland.Controllers
 
         #region ZipCodeCheck
         [HttpGet, Route("ZipCodeCheck")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult ZipCodeCheck(string ZipCode)
+        public ResponseModel<bool> ZipCodeCheck(string ZipCode)
         {
             try
             {
-                if (string.IsNullOrEmpty(ZipCode))
-                {
-                    return BadRequest();
-                }
-                else
-                {
-                    if (_bookingService.ZipCodeCheck(ZipCode))
-                    {
-                        return Ok();
-                    }
-                    else
-                    {
-                        return NotFound();
-                    }
-                }
+                ResponseModel<bool> responseModel = _bookingService.ZipCodeCheck(ZipCode);
+                return responseModel;
             }
-            catch
+            catch (Exception ex)
             {
-                return BadRequest();
+                return new ResponseModel<bool>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
             }
         }
         #endregion

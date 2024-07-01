@@ -1,8 +1,8 @@
 ﻿using Helperland.Entity.DataContext;
 using Helperland.Entity.DataModels;
 using Helperland.Entity.Model;
+using Microsoft.AspNetCore.Http;
 using System.Collections;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Helperland.Repository.Interface
 {
@@ -18,30 +18,30 @@ namespace Helperland.Repository.Interface
         }
 
         #region Login
-        public UserDataModel Login(LoginModel user)
+        public ResponseModel<UserDataModel> Login(LoginModel user)
         {
             try
             {
                 var userVar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
                 if (userVar == null)
                 {
-                    UserDataModel userData = new()
+                    return new ResponseModel<UserDataModel>
                     {
-                        IsError = true,
-                        ErrorMessage = "User not registered, Please register first!"
+                        IsSuccess = false,
+                        Message = "User not registered, Please register first!",
+                        StatusCode = StatusCodes.Status404NotFound,
                     };
-                    return userData;
                 }
                 else
                 {
                     if (userVar.Password != user.Password)
                     {
-                        UserDataModel userData = new()
+                        return new ResponseModel<UserDataModel>
                         {
-                            IsError = true,
-                            ErrorMessage = "Either Email or Password is incorrect, Please check and try again!"
+                            IsSuccess = false,
+                            Message = "Either Email or Password is incorrect, Please check and try again!",
+                            StatusCode = StatusCodes.Status404NotFound,
                         };
-                        return userData;
                     }
                     else
                     {
@@ -51,39 +51,43 @@ namespace Helperland.Repository.Interface
                             LastName = userVar.LastName,
                             Email = userVar.Email,
                             RoleId = userVar.RoleId,
-                            IsError = false,
-                            ErrorMessage = ""
                         };
-                        return userData;
+                        return new ResponseModel<UserDataModel>
+                        {
+                            Data = userData,
+                            IsSuccess = true,
+                            Message = "Logged in Successfully.",
+                            StatusCode = StatusCodes.Status200OK,
+                        };
                     }
                 }
             }
-            catch
+            catch (Exception ex) 
             {
-                UserDataModel userData = new()
+                return new ResponseModel<UserDataModel>
                 {
-                    IsError = true,
-                    ErrorMessage = "User not registered, Please register first!"
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
                 };
-                return userData;
             }
         }
         #endregion
 
         #region Signup
-        public UserDataModel Signup(UserModel user)
+        public ResponseModel<UserDataModel> Signup(UserModel user)
         {
             try
             {
                 var userVar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
                 if (userVar != null)
                 {
-                    UserDataModel userModel = new()
+                    return new ResponseModel<UserDataModel>
                     {
-                        IsError = true,
-                        ErrorMessage = "User already exists, Please Login"
+                        IsSuccess = false,
+                        Message = "User already exists, Please Login",
+                        StatusCode = StatusCodes.Status400BadRequest,
                     };
-                    return userModel;
                 }
 
                 User userData = new()
@@ -112,36 +116,41 @@ namespace Helperland.Repository.Interface
                     LastName = user.Lastname,
                     Email = user.Email,
                     RoleId = user.Roleid,
-                    IsError = false
                 };
-                return userDataModel;
-            }
-            catch
-            {
-                UserDataModel userModel = new()
+                return new ResponseModel<UserDataModel>
                 {
-                    IsError = true,
-                    ErrorMessage = "User already exists, Please Login"
+                    Data = userDataModel,
+                    IsSuccess = true,
+                    Message = "Welcome to Helperland.",
+                    StatusCode = StatusCodes.Status200OK,
                 };
-                return userModel;
+            }
+            catch (Exception ex) 
+            {
+                return new ResponseModel<UserDataModel>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
             }
         }
         #endregion
 
         #region ForgotPass
-        public ResetPass ForgotPass(ResetPass user)
+        public ResponseModel<ResetPass> ForgotPass(ResetPass user)
         {
             try
             {
                 var userVar = _context.Users.FirstOrDefault(u => u.Email == user.Email);
                 if (userVar == null)
                 {
-                    ResetPass passwordObject = new()
+                    return new ResponseModel<ResetPass>
                     {
-                        IsError = true,
-                        ErrorMessage = "User not registered, Please register first!"
+                        IsSuccess = false,
+                        Message = "User not registered, Please register first!",
+                        StatusCode = StatusCodes.Status404NotFound,
                     };
-                    return passwordObject;
                 }
                 else
                 {
@@ -155,26 +164,31 @@ namespace Helperland.Repository.Interface
                     _emailConfig.SendMail(userVar.Email, subject, emailBody);
                     ResetPass passwordObject = new()
                     {
-                        Email = userVar.Email,
-                        IsError = false
+                        Email = userVar.Email
                     };
-                    return passwordObject;
+                    return new ResponseModel<ResetPass>
+                    {
+                        Data = passwordObject,
+                        IsSuccess = true,
+                        Message = "Link to reset the password is sent.",
+                        StatusCode = StatusCodes.Status200OK,
+                    };
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                ResetPass passwordObject = new()
+                return new ResponseModel<ResetPass>
                 {
-                    IsError = true,
-                    ErrorMessage = "User not registered, Please register first!"
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
                 };
-                return passwordObject;
             }
         }
         #endregion
 
         #region ResetPassLink
-        public ResetPass ResetPassLink(ResetPass user)
+        public ResponseModel<ResetPass> ResetPassLink(ResetPass user)
         {
             try
             {
@@ -184,49 +198,45 @@ namespace Helperland.Repository.Interface
 
                 TimeSpan time = DateTime.Now - DateTime.Parse(date);
 
-                if (time.TotalHours > 2)
-                {
-                    ResetPass passwordObject = new()
-                    {
-                        IsError = true,
-                        ErrorMessage = "Link is either expired or invalid!"
-                    };
-                    return passwordObject;
-                }
-
                 var userVar = _context.Users.FirstOrDefault(u => u.Email == email && u.ResetKey == token);
-                if (userVar == null)
+                if (userVar == null || time.TotalHours > 2)
                 {
-                    ResetPass passwordObject = new()
+                    return new ResponseModel<ResetPass>
                     {
-                        IsError = true,
-                        ErrorMessage = "Link is either expired or invalid!"
+                        IsSuccess = false,
+                        Message = "Link is either expired or invalid!",
+                        StatusCode = StatusCodes.Status400BadRequest,
                     };
-                    return passwordObject;
                 }
                 else
                 {
                     ResetPass passwordObject = new()
                     {
-                        Email = userVar.Email,
-                        IsError = false
+                        Email = userVar.Email
                     };
-                    return passwordObject;
+                    return new ResponseModel<ResetPass>
+                    {
+                        Data = passwordObject,
+                        IsSuccess = true,
+                        Message = "You can change your password, but please remember to follow security guidelines.",
+                        StatusCode = StatusCodes.Status200OK,
+                    };
                 }
             }
-            catch {
-                ResetPass passwordObject = new()
+            catch (Exception ex)
+            {
+                return new ResponseModel<ResetPass>
                 {
-                    IsError = true,
-                    ErrorMessage = "Link is either expired or invalid!"
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
                 };
-                return passwordObject;
             }
         }
         #endregion
 
         #region ResetPass
-        public ResetPass ResetPass(ResetPass user)
+        public ResponseModel<ResetPass> ResetPass(ResetPass user)
         {
             try
             {
@@ -235,12 +245,12 @@ namespace Helperland.Repository.Interface
                 var userVar = _context.Users.FirstOrDefault(u => u.Email == email);
                 if (userVar == null)
                 {
-                    ResetPass passObject = new()
+                    return new ResponseModel<ResetPass>
                     {
-                        IsError = true,
-                        ErrorMessage = "Internal Server Error!"
+                        IsSuccess = false,
+                        Message = "Internal Server Error!",
+                        StatusCode = StatusCodes.Status500InternalServerError,
                     };
-                    return passObject;
                 }
                 else
                 {
@@ -251,25 +261,31 @@ namespace Helperland.Repository.Interface
                     _context.SaveChanges();
                     ResetPass passwordObject = new()
                     {
-                        Email = userVar.Email,
-                        IsError = false
+                        Email = userVar.Email
                     };
-                    return passwordObject;
+                    return new ResponseModel<ResetPass>
+                    {
+                        Data = passwordObject,
+                        IsSuccess = true,
+                        Message = "Password changed successfully.",
+                        StatusCode = StatusCodes.Status200OK,
+                    };
                 }
             }
-            catch {
-                ResetPass passObject = new()
+            catch (Exception ex)
+            {
+                return new ResponseModel<ResetPass>
                 {
-                    IsError = true,
-                    ErrorMessage = "Password can not be updated!"
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
                 };
-                return passObject;
             }
         }
         #endregion
 
         #region GetUsers
-        public List<UserDataModel> GetUsers()
+        public ResponseModel<List<UserDataModel>> GetUsers()
         {
             try
             {
@@ -283,11 +299,22 @@ namespace Helperland.Repository.Interface
                                                 RoleId = u.RoleId,
                                                 ResetKey = u.ResetKey
                                             }).ToList();
-                return user;
+                return new ResponseModel<List<UserDataModel>>
+                {
+                    Data = user,
+                    IsSuccess = true,
+                    Message = "",
+                    StatusCode = StatusCodes.Status200OK,
+                };
             }
-            catch
+            catch (Exception ex)
             {
-                return new List<UserDataModel>();
+                return new ResponseModel<List<UserDataModel>>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
             }
         }
         #endregion
@@ -346,6 +373,65 @@ namespace Helperland.Repository.Interface
         }
         #endregion
 
+        /*#region GetProfile
+        public ResponseModel<ProfileDataModel> GetProfile(string email)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(email))
+                {
+                    return new ResponseModel<ProfileDataModel>
+                    {
+                        IsSuccess = false,
+                        Message = "Can not load profile data",
+                        StatusCode = StatusCodes.Status400BadRequest,
+                    };
+                }
+                else
+                {
+                    var user = _context.Users.FirstOrDefault(u => u.Email == email);
+                    if (user == null || string.IsNullOrEmpty(user.Email))
+                    {
+                        return new ResponseModel<ProfileDataModel>
+                        {
+                            IsSuccess = false,
+                            Message = "Can not load profile data",
+                            StatusCode = StatusCodes.Status400BadRequest,
+                        };
+                    }
+                    else
+                    {
+                        ProfileDataModel profile = new()
+                        {
+                            FirstName = user.FirstName,
+                            LastName = user.LastName,
+                            Email = user.Email,
+                            Contact = user.Mobile,
+                            DateOfBirth = user.DateOfBirth,
+                            Language = user.Language
+                        };
+                        return new ResponseModel<ProfileDataModel>
+                        {
+                            Data = profile,
+                            IsSuccess = true,
+                            Message = "",
+                            StatusCode = StatusCodes.Status200OK,
+                        };
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel<ProfileDataModel>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
+            }
+        }
+        #endregion*/
+
         #region UpdateProfile
         public ProfileDataModel UpdateProfile(ProfileDataModel profile)
         {
@@ -396,12 +482,12 @@ namespace Helperland.Repository.Interface
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 ProfileDataModel profileData = new()
                 {
                     IsError = true,
-                    ErrorMessage = "Can not update profile data"
+                    ErrorMessage = ex.Message
                 };
                 return profileData;
             }
@@ -459,12 +545,12 @@ namespace Helperland.Repository.Interface
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 PasswordModel passwordModel = new()
                 {
                     IsError = true,
-                    ErrorMessage = "Can not update the password"
+                    ErrorMessage = ex.Message
                 };
                 return passwordModel;
             }
@@ -522,12 +608,12 @@ namespace Helperland.Repository.Interface
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 AddressDataModel addressData = new()
                 {
                     IsError = true,
-                    ErrorMessage = "Address not added!"
+                    ErrorMessage = ex.Message
                 };
                 return addressData;
             }
@@ -566,12 +652,12 @@ namespace Helperland.Repository.Interface
                     return addressDataModel;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 AddressDataModel addressData = new()
                 {
                     IsError = true,
-                    ErrorMessage = "Address not added!"
+                    ErrorMessage = ex.Message
                 };
                 return addressData;
             }
@@ -597,13 +683,13 @@ namespace Helperland.Repository.Interface
                                                       }).ToList();
                 return addressData;
             }
-            catch
+            catch (Exception ex)
             {
                 List<AddressDataModel> addressData = ( from address in _context.UserAddresses
                                                        select new AddressDataModel
                                                        {
                                                          IsError = true,
-                                                         ErrorMessage = "Can not fetch the address!"
+                                                         ErrorMessage = ex.Message
                                                        }).ToList();
                 return addressData;
             }
@@ -636,12 +722,12 @@ namespace Helperland.Repository.Interface
                 }
                 return addressData;
             }
-            catch
+            catch (Exception ex)
             {
                 AddressDataModel addressData = new()
                 {
                     IsError = true,
-                    ErrorMessage = "Can not fetch the address!"
+                    ErrorMessage = ex.Message
                 };
                 return addressData;
             }
@@ -667,7 +753,7 @@ namespace Helperland.Repository.Interface
                     return true;
                 }
             }
-            catch
+            catch (Exception ex)
             {
                 return false;
             }

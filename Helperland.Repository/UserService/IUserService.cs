@@ -4,19 +4,21 @@ namespace Helperland.Repository.Interface
 {
     public interface IUserService
     {
-        public UserDataModel Login(LoginModel user);
+        public ResponseModel<UserDataModel> Login(LoginModel user);
 
-        public UserDataModel Signup(UserModel user);
+        public ResponseModel<UserDataModel> Signup(UserModel user);
 
-        public ResetPass ForgotPass(ResetPass user);
+        public ResponseModel<ResetPass> ForgotPass(ResetPass user);
 
-        public ResetPass ResetPassLink(ResetPass user);
+        public ResponseModel<ResetPass> ResetPassLink(ResetPass user);
 
-        public ResetPass ResetPass(ResetPass user);
+        public ResponseModel<ResetPass> ResetPass(ResetPass user);
 
-        public List<UserDataModel> GetUsers();
+        public ResponseModel<List<UserDataModel>> GetUsers();
 
         public ProfileDataModel GetProfile(string email);
+
+        /*public ResponseModel<ProfileDataModel> GetProfile(string email);*/
 
         public ProfileDataModel UpdateProfile(ProfileDataModel profile);
 

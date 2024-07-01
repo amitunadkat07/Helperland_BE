@@ -10,10 +10,6 @@
 
         public int? RoleId { get; set; }
 
-        public bool IsError { get; set; }
-
-        public string? ErrorMessage { get; set; }
-
         public string? ResetKey { get; set; }
 
         public string? Token { get; set; }

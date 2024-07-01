@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Helperland.Entity.Model;
 
 namespace Helperland.Repository.BookingService
 {
     public interface IBookingService
     {
-        public bool ZipCodeCheck(string ZipCode);
+        public ResponseModel<bool> ZipCodeCheck(string ZipCode);
     }
 }

@@ -1,10 +1,7 @@
 ﻿using Helperland.Entity.DataContext;
 using Helperland.Entity.DataModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Helperland.Entity.Model;
+using Microsoft.AspNetCore.Http;
 
 namespace Helperland.Repository.BookingService
 {
@@ -18,29 +15,57 @@ namespace Helperland.Repository.BookingService
         }
 
         #region ZipCodeCheck
-        public bool ZipCodeCheck(string ZipCode)
+        public ResponseModel<bool> ZipCodeCheck(string ZipCode)
         {
             try
             {
-                List<User>? users = (from user in _context.Users
-                                     where user.RoleId == 3 && user.ZipCode == ZipCode
-                                     select new User
-                                     {
-                                         UserId = user.UserId,
-                                         Email = user.Email
-                                     }).ToList();
-                if (users.Any())
+                if (string.IsNullOrEmpty(ZipCode))
                 {
-                    return true;
+                    return new ResponseModel<bool>
+                    {
+                        IsSuccess = false,
+                        Message = "Please enter Zip Code value",
+                        StatusCode = StatusCodes.Status400BadRequest,
+                    };
                 }
                 else
                 {
-                    return false;
+                    List<User>? users = (from user in _context.Users
+                                         where user.RoleId == 3 && user.ZipCode == ZipCode
+                                         select new User
+                                         {
+                                             UserId = user.UserId,
+                                             Email = user.Email
+                                         }).ToList();
+                    if (users.Any())
+                    {
+                        return new ResponseModel<bool>
+                        {
+                            Data = true,
+                            IsSuccess = true,
+                            Message = "success",
+                            StatusCode = StatusCodes.Status200OK,
+                        };
+                    }
+                    else
+                    {
+                        return new ResponseModel<bool>
+                        {
+                            IsSuccess = false,
+                            Message = "We are not providing service in this area.",
+                            StatusCode = StatusCodes.Status404NotFound,
+                        };
+                    }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return false;
+                return new ResponseModel<bool>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
             }
         }
         #endregion

@@ -1,10 +1,8 @@
-﻿using Helperland.Entity.DataModels;
-using Helperland.Entity.Model;
+﻿using Helperland.Entity.Model;
 using Helperland.Repository.Interface;
 using Helperland.Repository.TokenService;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Helperland.Controllers
 {
@@ -25,126 +23,134 @@ namespace Helperland.Controllers
 
         #region Login
         [HttpPost, Route("Login")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<LoginModel> Login([FromBody] LoginModel user)
+        public ActionResult<ResponseModel<UserDataModel>> Login([FromBody] LoginModel user)
         {
             try
             {
-                UserDataModel userData = _userService.Login(user);
-                if (!userData.IsError)
+                ResponseModel<UserDataModel> responseModel = _userService.Login(user);
+                if (responseModel.IsSuccess && responseModel.Data != null)
                 {
-                    var jwtToken = _tokenService.GenerateJWTAuthetication(userData);
-                    userData.Token = jwtToken;
-                    return Ok(userData);
+                    var jwtToken = _tokenService.GenerateJWTAuthetication(responseModel.Data);
+                    responseModel.Data.Token = jwtToken;
+                    return responseModel;
                 }
                 string errorMessage = "Unauthorized user " + user.Email + " tried to login";
                 _logger.LogError(errorMessage);
-                return NotFound(userData);
+                return responseModel;
             }
-            catch
+            catch (Exception ex)
             {
-                return NotFound();
+                return new ResponseModel<UserDataModel>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status404NotFound,
+                };
             }
         }
         #endregion
 
         #region Signup
         [HttpPost, Route("Signup")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public ActionResult<UserModel> Signup([FromBody] UserModel user)
+        public ActionResult<ResponseModel<UserDataModel>> Signup([FromBody] UserModel user)
         {
             try
             {
-                UserDataModel userData = _userService.Signup(user);
-                if (!userData.IsError)
+                ResponseModel<UserDataModel> responseModel = _userService.Signup(user);
+                if (responseModel.IsSuccess && responseModel.Data != null)
                 {
-                    if (userData.RoleId == 2)
+                    if (responseModel.Data.RoleId == 2)
                     {
-                        var jwtToken = _tokenService.GenerateJWTAuthetication(userData);
-                        userData.Token = jwtToken;
+                        var jwtToken = _tokenService.GenerateJWTAuthetication(responseModel.Data);
+                        responseModel.Data.Token = jwtToken;
                     }
-                    return Ok(userData);
+                    return responseModel;
                 }
                 else
                 {
                     string errorMessage = user.Firstname + " " + user.Lastname + " tried to register again";
                     _logger.LogError(errorMessage);
-                    return BadRequest(userData);
+                    return responseModel;
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return BadRequest();
+                return new ResponseModel<UserDataModel>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
             }
         }
         #endregion
 
         #region ForgotPass
         [HttpPost, Route("ForgotPass")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<ResetPass> ForgotPass([FromBody] ResetPass user)
+        public ActionResult<ResponseModel<ResetPass>> ForgotPass([FromBody] ResetPass user)
         {
             try
             {
-                ResetPass passwordObject = _userService.ForgotPass(user);
-                if (!passwordObject.IsError)
+
+                ResponseModel<ResetPass> responseModel = _userService.ForgotPass(user);
+                if (responseModel.IsSuccess)
                 {
-                    return Ok(passwordObject);
+                    return responseModel;
                 }
                 string errorMessage = "Unauthorized user " + user.Email + " wants to change the password";
                 _logger.LogError(errorMessage);
-                return NotFound(passwordObject);
+                return responseModel;
             }
-            catch 
-            { 
-                return BadRequest(); 
+            catch (Exception ex)
+            {
+                return new ResponseModel<ResetPass>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
             }
         }
         #endregion
 
         #region ResetPassLink
         [HttpPost, Route("ResetPassLink")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<ResetPass> ResetPassLink([FromBody] ResetPass user)
+        public ActionResult<ResponseModel<ResetPass>> ResetPassLink([FromBody] ResetPass user)
         {
             try
             {
-                ResetPass passwordObject = _userService.ResetPassLink(user);
-                if (!passwordObject.IsError)
-                {
-                    return Ok(passwordObject);
-                }
-                return NotFound(passwordObject);
+                ResponseModel<ResetPass> responseModel = _userService.ResetPassLink(user);
+                return responseModel;
             }
-            catch
+            catch (Exception ex)
             {
-                return NotFound();
+                return new ResponseModel<ResetPass>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
             }
         }
         #endregion
 
         #region ResetPass
         [HttpPost, Route("ResetPass")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public ActionResult<ResetPass> ResetPass([FromBody] ResetPass user)
+        public ActionResult<ResponseModel<ResetPass>> ResetPass([FromBody] ResetPass user)
         {
             try
             {
-                ResetPass passwordObject = _userService.ResetPass(user);
-                if (!passwordObject.IsError)
-                {
-                    return Ok(passwordObject);
-                }
-                return NotFound(passwordObject);
+                ResponseModel<ResetPass> responseModel = _userService.ResetPass(user);
+                return responseModel;
             }
-            catch
+            catch (Exception ex)
             {
-                return NotFound();
+                return new ResponseModel<ResetPass>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status404NotFound,
+                };
             }
         }
         #endregion
@@ -152,21 +158,46 @@ namespace Helperland.Controllers
         #region GetUsers
         [Authorize]
         [HttpGet, Route("GetUsers")]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        public ActionResult<IEnumerable<UserDataModel>> GetUsers()
+        public ActionResult<ResponseModel<List<UserDataModel>>> GetUsers()
         {
             try
             {
-                List<UserDataModel> user = _userService.GetUsers();
-                return Ok(user);
+                ResponseModel<List<UserDataModel>> responseModel = _userService.GetUsers();
+                return responseModel;
             }
-            catch
+            catch (Exception ex)
             {
-                return Unauthorized();
+                return new ResponseModel<List<UserDataModel>>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
             }
         }
         #endregion
+
+        /*#region GetProfile
+        [Authorize]
+        [HttpGet("GetProfile")]
+        public ActionResult<ResponseModel<ProfileDataModel>> GetProfile(string email)
+        {
+            try
+            {
+                ResponseModel<ProfileDataModel> responseModel = _userService.GetProfile(email);
+                return responseModel;
+            }
+            catch (Exception ex)
+            {
+                return new ResponseModel<ProfileDataModel>
+                {
+                    IsSuccess = false,
+                    Message = ex.Message,
+                    StatusCode = StatusCodes.Status400BadRequest,
+                };
+            }
+        }
+        #endregion*/
 
         #region GetProfile
         [Authorize]
@@ -197,6 +228,7 @@ namespace Helperland.Controllers
         }
         #endregion
 
+
         #region UpdateProfile
         [Authorize]
         [HttpPut("UpdateProfile")]
@@ -214,9 +246,9 @@ namespace Helperland.Controllers
                 }
                 return Ok(profileDataModel);
             }
-            catch
+            catch (Exception ex)
             {
-                return Unauthorized();
+                return Unauthorized(ex.Message);
             }
         }
         #endregion
@@ -238,9 +270,9 @@ namespace Helperland.Controllers
                 }
                 return Ok(passwordModel);
             }
-            catch
+            catch (Exception ex)
             {
-                return Unauthorized();
+                return Unauthorized(ex.Message);
             }
         }
         #endregion
@@ -268,7 +300,7 @@ namespace Helperland.Controllers
             }
             catch (Exception ex) 
             {
-                return Unauthorized(ex);
+                return Unauthorized(ex.Message);
             }
         }
         #endregion
@@ -300,9 +332,9 @@ namespace Helperland.Controllers
                     }
                 }
             }
-            catch
+            catch (Exception ex)
             {
-                return Unauthorized();
+                return Unauthorized(ex.Message);
             }
         }
         #endregion
@@ -319,9 +351,9 @@ namespace Helperland.Controllers
                 List<AddressDataModel> addressData = _userService.GetAddressByUser(email);
                 return Ok(addressData);
             }
-            catch
+            catch (Exception ex)
             {
-                return Unauthorized();
+                return Unauthorized(ex.Message);
             }
         }
         #endregion
@@ -343,9 +375,9 @@ namespace Helperland.Controllers
                 }
                 return Ok(addressData);
             }
-            catch
+            catch (Exception ex)
             {
-                return Unauthorized();
+                return Unauthorized(ex.Message);
             }
         }
         #endregion
@@ -371,9 +403,9 @@ namespace Helperland.Controllers
                 }
                 return NoContent();
             }
-            catch
+            catch (Exception ex)
             {
-                return Unauthorized();
+                return Unauthorized(ex.Message);
             }
         }
         #endregion
